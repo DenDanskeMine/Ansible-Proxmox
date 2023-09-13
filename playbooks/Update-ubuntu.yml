@@ -1,0 +1,24 @@
+---
+- hosts: ubuntu
+  gather_facts: yes
+  become: yes
+
+  tasks:
+    - name: laver dist-upgrade.
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: yes
+
+    - name: Checker om en reboot er nødvendig.
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_md5: no
+      register: reboot_required_file
+
+    - name: rebotter hvis nødvendigt
+      ansible.builtin.reboot:
+      when: reboot_required_file.stat.exists == true
+
+    - name: Fjerner depents der ikke er nøsvendige emre
+      ansible.builtin.apt:
+        autoremove: yes
